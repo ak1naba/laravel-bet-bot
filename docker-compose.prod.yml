@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.production
+    image: laravel-app
+    container_name: '${APP_NAME}-app'
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - ./app:/var/www
+      - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+    command: >
+      sh -c "php artisan migrate --force &&
+             php artisan octane:start --server=swoole --host=0.0.0.0 --port=8000"
+    networks:
+      - laravel
+      - nginx
+
+  db_postgres:
+    image: postgres:13
+    container_name: '${APP_NAME}-db-postgres'
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - dbdata_postgres:/var/lib/postgresql/data
+    networks:
+      - laravel
+
+  adminer:
+    image: adminer
+    container_name: '${APP_NAME}-adminer'
+    restart: unless-stopped
+    networks:
+      - laravel
+      - nginx
+    ports:
+      - '8080:8080'
+
+networks:
+  laravel:
+    driver: bridge
+  nginx:
+    external: true
+
+volumes:
+  dbdata_postgres:
+    driver: local
