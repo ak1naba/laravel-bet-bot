@@ -28,7 +28,7 @@ jobs:
           --exclude='docker-compose.yml' \
           --exclude='node_modules' \
           --exclude='vendor' \
-          ./ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/srv/laravel-tg-bot/
+          ./ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/srv/laravel-bet-bot
 
       - name: Verify .env file exists
         uses: appleboy/ssh-action@v0.1.6
