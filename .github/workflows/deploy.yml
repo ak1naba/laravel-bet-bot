@@ -76,7 +76,7 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           ssh_args: "-4"
           script: |
-            docker exec laravel-app composer install --no-dev --optimize-autoloader
+            docker exec laravel-bet-bot-app composer install --no-dev --optimize-autoloader
 
       - name: Set permissions
         uses: appleboy/ssh-action@v0.1.6
