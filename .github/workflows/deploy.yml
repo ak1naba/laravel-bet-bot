@@ -28,7 +28,7 @@ jobs:
           --exclude='docker-compose.yml' \
           --exclude='node_modules' \
           --exclude='vendor' \
-          ./ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/srv/laravel-bet-bot/
+          ./ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/srv/laravel-tg-bot/
 
       - name: Verify .env file exists
         uses: appleboy/ssh-action@v0.1.6
@@ -38,7 +38,7 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           ssh_args: "-4"
           script: |
-            cd /srv/laravel-bet-bot
+            cd /srv/laravel-tg-bot
             if [ -f /srv/variables/.env.production ]; then
               cp /srv/variables/.env.production app/.env
             fi
@@ -55,7 +55,7 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           ssh_args: "-4"
           script: |
-            cd /srv/laravel-bet-bot
+            cd /srv/laravel-tg-bot
             docker-compose down
 
       - name: Build containers
@@ -66,7 +66,7 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           ssh_args: "-4"
           script: |
-            cd /srv/laravel-bet-bot
+            cd /srv/laravel-tg-bot
             docker-compose -f docker-compose.prod.yml up -d
 
       - name: Install PHP dependencies
