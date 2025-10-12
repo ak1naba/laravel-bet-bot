@@ -86,9 +86,9 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           ssh_args: "-4"
           script: |
-            docker exec laravel-app chown -R www-data:www-data /var/www/storage
-            docker exec laravel-app chmod -R 775 /var/www/storage
-            docker exec laravel-app chmod -R 775 /var/www/bootstrap/cache
+            docker exec laravel-bet-bot-app chown -R www-data:www-data /var/www/storage
+            docker exec laravel-bet-bot-app chmod -R 775 /var/www/storage
+            docker exec laravel-bet-bot-app chmod -R 775 /var/www/bootstrap/cache
 
       - name: Clear and cache Laravel configs
         uses: appleboy/ssh-action@v0.1.6
@@ -98,10 +98,10 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           ssh_args: "-4"
           script: |
-            docker exec laravel-app php artisan optimize
-            docker exec laravel-app php artisan config:cache
-            docker exec laravel-app php artisan route:cache
-            docker exec laravel-app php artisan view:cache
+            docker exec laravel-bet-bot-app php artisan optimize
+            docker exec laravel-bet-bot-app php artisan config:cache
+            docker exec laravel-bet-bot-app php artisan route:cache
+            docker exec laravel-bet-bot-app php artisan view:cache
 
       - name: Run migrations
         uses: appleboy/ssh-action@v0.1.6
@@ -111,7 +111,7 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           ssh_args: "-4"
           script: |
-            docker exec laravel-app php artisan migrate --force
+            docker exec laravel-bet-bot-app php artisan migrate --force
 
       - name: Restart Nginx
         uses: appleboy/ssh-action@v0.1.6
