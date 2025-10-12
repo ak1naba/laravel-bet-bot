@@ -17,6 +17,11 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SERVER_SSH_KEY }}
 
+      - name: Debug secrets
+        run:
+          echo "User:
+            ${{ secrets.SERVER_USER }}, Host: ${{ secrets.SERVER_HOST }}"
+
       - name: Copy project files to server
         run: |
           rsync -avz --delete -e "ssh -4 -o StrictHostKeyChecking=no" \
