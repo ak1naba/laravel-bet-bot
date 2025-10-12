@@ -54,7 +54,7 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           ssh_args: "-4"
           script: |
-            cd /srv/laravel-bot-bot
+            cd /srv/laravel-bet-bot
             docker-compose down
 
       - name: Build containers
@@ -65,7 +65,7 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           ssh_args: "-4"
           script: |
-            cd /srv/laravel-bot-bot
+            cd /srv/laravel-bet-bot
             docker-compose -f docker-compose.prod.yml up -d
 
       - name: Install PHP dependencies
