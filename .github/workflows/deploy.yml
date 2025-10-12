@@ -36,9 +36,8 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
-          ssh_args: "-4"
           script: |
-            cd /srv/laravel-bot-bot
+            cd /srv/laravel-bet-bot
             if [ -f /srv/variables/.env.production ]; then
               cp /srv/variables/.env.production app/.env
             fi
