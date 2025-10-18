@@ -14,4 +14,9 @@ Route::post('/register', [AuthController::class, 'register']);
 
 Route::group(['middleware'=>'auth:sanctum'], function (){
     Route::post('/logout', [AuthController::class, 'logout']);
+
+    Route::prefix('/user')
+        ->group(function () {
+            Route::get('/me', [UserController::class, 'getAuthenticatedUser']);
+    });
 });

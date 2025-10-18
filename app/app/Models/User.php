@@ -48,8 +48,8 @@ class User extends Authenticatable
         ];
     }
 
-    public function newItems()
+    public function telegramUser()
     {
-        return $this->hasMany(NewItem::class);
+        return $this->hasOne(TelegramUser::class);
     }
 }
