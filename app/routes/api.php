@@ -41,13 +41,13 @@ Route::group(['middleware'=>'auth:sanctum'], function (){
 
         Route::prefix('/team')
             ->group(function () {
-                Route::get('/', [TeamController::class, 'index'])->name('sport.index');
-                Route::get('/{team}', [TeamController::class, 'show'])->name('sport.show');
-                Route::post('/', [TeamController::class, 'store'])->name('sport.store');
-                Route::put('/{team}', [TeamController::class, 'update'])->name('sport.update');
-                Route::delete('/{team}', [TeamController::class, 'delete'])->name('sport.delete');
-                Route::delete('/force/{team}', [TeamController::class, 'forceDelete'])->name('sport.forceDelete');
-                Route::post('/restore/{team}', [TeamController::class, 'restore'])->name('sport.restore');
+                Route::get('/', [TeamController::class, 'index'])->name('team.index');
+                Route::get('/{team}', [TeamController::class, 'show'])->name('team.show');
+                Route::post('/', [TeamController::class, 'store'])->name('team.store');
+                Route::put('/{team}', [TeamController::class, 'update'])->name('team.update');
+                Route::delete('/{team}', [TeamController::class, 'delete'])->name('team.delete');
+                Route::delete('/force/{team}', [TeamController::class, 'forceDelete'])->name('team.forceDelete');
+                Route::post('/restore/{team}', [TeamController::class, 'restore'])->name('team.restore');
             });
 
     });
