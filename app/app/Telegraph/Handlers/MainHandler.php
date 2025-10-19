@@ -15,22 +15,24 @@ class MainHandler extends WebhookHandler
 {
     public function handle(Request $request, TelegraphBot $bot): void
     {
-        try {
-            $message = $this->message?->text();
+        // Проверяем, есть ли сообщение вообще
+        if (!$this->message) {
+            \Log::warning('Telegraph: Нет сообщения в обновлении');
+            return;
+        }
 
-            // Логируем входящее сообщение
-            Log::info('Telegraph: Входящее сообщение', [
+        try {
+            $message = $this->message->text();
+            
+            \Log::info('Telegraph: Входящее сообщение', [
                 'message' => $message,
-                'chat_id' => $this->chat->id,
-                'user_id' => $this->message?->from()?->id(),
+                'chat_id' => $this->chat?->id,
             ]);
 
             if ($this->isCommand($message)) {
                 $command = $this->message->command();
-
-                Log::info('Telegraph: Распознана команда', [
-                    'command' => $command,
-                ]);
+                
+                \Log::info('Telegraph: Распознана команда', ['command' => $command]);
 
                 match($command) {
                     'start' => $this->loadHandler(StartModule::class, $request, $bot),
@@ -41,54 +43,60 @@ class MainHandler extends WebhookHandler
                 return;
             }
 
-            $currentModule = $this->chat->getConversationData('current_module');
+            // Проверяем наличие $this->chat перед доступом
+            if (!isset($this->chat) || !$this->chat) {
+                \Log::warning('Telegraph: $this->chat не инициализирован');
+                return;
+            }
 
-            Log::info('Telegraph: Проверка текущего модуля', [
+            $currentModule = $this->chat->getConversationData('current_module');
+            
+            \Log::info('Telegraph: Проверка текущего модуля', [
                 'current_module' => $currentModule,
             ]);
 
             if ($currentModule) {
-                Log::info('Telegraph: Загрузка модуля', [
-                    'module' => $currentModule,
-                ]);
+                \Log::info('Telegraph: Загрузка модуля', ['module' => $currentModule]);
                 $this->loadHandler($currentModule, $request, $bot);
                 return;
             }
 
             $this->reply('Неизвестная команда. Используйте /start');
-
+            
         } catch (\Exception $e) {
-            Log::error('Telegraph: Ошибка в MainHandler', [
+            \Log::error('Telegraph: Ошибка в MainHandler', [
                 'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString(),
             ]);
-
-            $this->reply('❌ Ошибка в обработке сообщения');
+            
+            if (isset($this->chat) && $this->chat) {
+                $this->reply('❌ Ошибка: ' . $e->getMessage());
+            }
         }
     }
 
     private function loadHandler(string $handlerClass, Request $request, TelegraphBot $bot): void
     {
         try {
-            Log::info('Telegraph: Создание экземпляра обработчика', [
-                'handler' => $handlerClass,
-            ]);
-
+            \Log::info('Telegraph: Создание экземпляра обработчика', ['handler' => $handlerClass]);
+            
             $handler = new $handlerClass($this->telegraph, $this->update);
             $handler->handle($request, $bot);
-
-            Log::info('Telegraph: Обработчик выполнен успешно', [
-                'handler' => $handlerClass,
-            ]);
-
+            
+            \Log::info('Telegraph: Обработчик выполнен успешно', ['handler' => $handlerClass]);
+            
         } catch (\Exception $e) {
-            Log::error('Telegraph: Ошибка при загрузке обработчика', [
+            \Log::error('Telegraph: Ошибка при загрузке обработчика', [
                 'handler' => $handlerClass,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-
-            $this->reply('❌ Ошибка: ' . $e->getMessage());
+            
+            if (isset($this->chat) && $this->chat) {
+                $this->reply('❌ Ошибка: ' . $e->getMessage());
+            }
         }
     }
 }
