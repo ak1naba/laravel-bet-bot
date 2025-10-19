@@ -35,7 +35,7 @@ class MainHandler extends WebhookHandler
             return;
         }
 
-        $this->reply('Неизвестная команда. Используйте /start');
+        $this->reply('Неизвестная команда. Используйте /start ');
     }
 
     private function loadHandler(string $handlerClass, Request $request, TelegraphBot $bot): void
