@@ -3,6 +3,8 @@
 namespace App\Telegraph\Modules;
 
 use DefStudio\Telegraph\Handlers\WebhookHandler;
+use DefStudio\Telegraph\Models\TelegraphBot;
+use Illuminate\Http\Request;
 
 class StartModule extends WebhookHandler
 {
