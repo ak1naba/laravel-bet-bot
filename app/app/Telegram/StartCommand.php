@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Telegram;
+namespace App\Telegram;
 
 use Telegram\Bot\Keyboard\Keyboard;
 use Illuminate\Support\Facades\Log;

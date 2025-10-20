@@ -5,10 +5,10 @@ namespace App\Http\Controllers;
 use Telegram\Bot\Api;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use App\Http\Telegram\StartCommand;
-use App\Http\Telegram\HelpCommand;
-use App\Http\Telegram\ProfileCommand;
-use App\Http\Telegram\FormWizard;
+use App\Telegram\StartCommand;
+use App\Telegram\HelpCommand;
+use App\Telegram\ProfileCommand;
+use App\Telegram\FormWizard;
 
 
 class TelegramController extends Controller

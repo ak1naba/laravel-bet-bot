@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Telegram;
+namespace App\Telegram;
 
 class ProfileCommand extends CommandHandler
 {
