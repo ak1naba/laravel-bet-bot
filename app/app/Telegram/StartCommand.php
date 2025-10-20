@@ -1,9 +1,9 @@
 <?php
-// app/Http/Controllers/Telegram/StartCommand.php
 
 namespace App\Http\Telegram;
 
 use Telegram\Bot\Keyboard\Keyboard;
+use Illuminate\Support\Facades\Log;
 
 class StartCommand extends CommandHandler
 {
@@ -27,21 +27,7 @@ class StartCommand extends CommandHandler
         
         $this->sendMessage($message, $keyboard);
         
-        // Сохраняем пользователя в БД
-        $this->saveUser($userInfo);
-    }
-    
-    private function saveUser($userInfo)
-    {
-        // Здесь логика сохранения пользователя в базу
-        \App\Models\TelegramUser::firstOrCreate(
-            ['telegram_id' => $userInfo['id']],
-            [
-                'first_name' => $userInfo['first_name'],
-                'last_name' => $userInfo['last_name'],
-                'username' => $userInfo['username'],
-                'language_code' => $userInfo['language_code'],
-            ]
-        );
+        // Логируем информацию о пользователе (вместо сохранения в БД)
+        Log::info('New user started bot:', $userInfo);
     }
 }
