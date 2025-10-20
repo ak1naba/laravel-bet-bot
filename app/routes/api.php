@@ -53,3 +53,8 @@ Route::group(['middleware'=>'auth:sanctum'], function (){
     });
 
 });
+
+Route::prefix('/telegram')
+    ->group(function(){
+        Route::post('/telegram/webhook', [TelegramController::class, 'webhook']);
+})
