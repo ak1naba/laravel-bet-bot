@@ -5,11 +5,9 @@ use App\Http\Controllers\NewItemController;
 use App\Http\Controllers\SportController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\UserController;
-use App\Http\Middleware\AdminMiddleware;
-use App\Http\Middleware\WriterAccess;
+use App\Http\Controllers\TelegramController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Middleware\AdminAccess;
-use App\Http\Middleware\NewItemOwning;
+
 
 Route::post('/login', [AuthController::class, 'authenticate']);
 Route::post('/register', [AuthController::class, 'register']);
@@ -56,5 +54,5 @@ Route::group(['middleware'=>'auth:sanctum'], function (){
 
 Route::prefix('/telegram')
     ->group(function(){
-        Route::post('/telegram/webhook', [TelegramController::class, 'webhook']);
+        Route::post('/webhook', [TelegramController::class, 'webhook']);
 });
