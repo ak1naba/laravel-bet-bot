@@ -5,16 +5,12 @@ namespace App\Telegraph\Handlers;
 use DefStudio\Telegraph\Handlers\WebhookHandler;
 use DefStudio\Telegraph\Models\TelegraphBot;
 use Illuminate\Http\Request;
-use App\Telegraph\Modules\StartModule;
-use App\Telegraph\Modules\FormModule;
-use App\Telegraph\Modules\ProfileModule;
 
 class MainHandler extends WebhookHandler
 {
     public function handle(Request $request, TelegraphBot $bot): void
     {
         try {
-            // ✅ Получаем обновление через метод, а не свойство
             if ($this->message) {
                 $this->handleMessage();
             } else {
@@ -48,9 +44,9 @@ class MainHandler extends WebhookHandler
                 ]);
 
                 match($command) {
-                    'start' => $this->handleStart(),
-                    'form' => $this->handleForm(),
-                    'profile' => $this->handleProfile(),
+                    'start' => $this->start(),
+                    'form' => $this->form(),
+                    'profile' => $this->profile(),
                     default => $this->reply('❌ Неизвестная команда. Используйте /start'),
                 };
                 return;
@@ -64,8 +60,8 @@ class MainHandler extends WebhookHandler
             ]);
 
             if ($currentModule) {
-                \Log::info('Telegraph: Загрузка модуля', ['module' => $currentModule]);
-                $this->loadModule($currentModule);
+                \Log::info('Telegraph: Обработка модуля', ['module' => $currentModule]);
+                $this->handleModuleMessage($currentModule);
                 return;
             }
 
@@ -83,10 +79,12 @@ class MainHandler extends WebhookHandler
         }
     }
 
-    private function handleStart(): void
+    // ==================== КОМАНДЫ ====================
+
+    private function start(): void
     {
         \Log::info('Telegraph: Обработка /start');
-        
+
         $this->reply('Добро пожаловать! 👋\n\n' .
             '/form - Заполнить анкету\n' .
             '/profile - Мой профиль\n' .
@@ -94,61 +92,101 @@ class MainHandler extends WebhookHandler
         );
     }
 
-    private function handleForm(): void
+    private function form(): void
     {
         \Log::info('Telegraph: Обработка /form');
-        
-        // Сохраняем текущий модуль
-        $this->chat->storeConversationData('current_module', 'FormModule');
-        
-        // Загружаем модуль
-        $this->loadModule('FormModule');
+
+        // Сохраняем текущий модуль и начинаем
+        $this->chat->storeConversationData('current_module', 'form');
+        $this->chat->storeConversationData('form_step', 'name');
+
+        $this->reply('📝 Начинаем заполнение анкеты!\n\nЭтап 1/3 - Как вас зовут?');
     }
 
-    private function handleProfile(): void
+    private function profile(): void
     {
         \Log::info('Telegraph: Обработка /profile');
-        
+
         $this->reply('👤 Профиль пользователя\n\n' .
             'ID: ' . $this->chat->id . '\n' .
             'Статус: Активный'
         );
     }
 
-    private function loadModule(string $moduleName): void
+    // ==================== МОДУЛИ ====================
+
+    private function handleModuleMessage(string $moduleName): void
     {
-        try {
-            \Log::info('Telegraph: Загрузка модуля', ['module' => $moduleName]);
+        match($moduleName) {
+            'form' => $this->handleFormStep(),
+            default => $this->reply('❌ Неизвестный модуль'),
+        };
+    }
 
-            $moduleClass = match($moduleName) {
-                'FormModule' => FormModule::class,
-                'ProfileModule' => ProfileModule::class,
-                'StartModule' => StartModule::class,
-                default => null,
-            };
+    private function handleFormStep(): void
+    {
+        $step = $this->chat->getConversationData('form_step');
+        $message = $this->message->text();
 
-            if (!$moduleClass) {
-                \Log::error('Telegraph: Неизвестный модуль', ['module' => $moduleName]);
-                $this->reply('❌ Модуль не найден: ' . $moduleName);
-                return;
-            }
+        \Log::info('Telegraph: FormModule::handleFormStep', [
+            'step' => $step,
+            'message' => $message,
+        ]);
 
-            // ✅ Создаём экземпляр правильно
-            $module = app()->make($moduleClass);
-            
-            // Вызываем обработку
-            $module->handle(request(), $this->bot());
+        match($step) {
+            'name' => $this->formHandleName($message),
+            'email' => $this->formHandleEmail($message),
+            'phone' => $this->formHandlePhone($message),
+            default => $this->reply('❌ Ошибка в анкете'),
+        };
+    }
 
-            \Log::info('Telegraph: Модуль выполнен успешно', ['module' => $moduleName]);
-
-        } catch (\Exception $e) {
-            \Log::error('Telegraph: Ошибка при выполнении модуля', [
-                'module' => $moduleName,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-
-            $this->reply('❌ Ошибка модуля: ' . substr($e->getMessage(), 0, 100));
+    private function formHandleName(string $name): void
+    {
+        if (strlen($name) < 2) {
+            $this->reply('❌ Имя должно быть не менее 2 символов. Попробуйте снова:');
+            return;
         }
+
+        $this->chat->storeConversationData('form_name', $name);
+        $this->chat->storeConversationData('form_step', 'email');
+        $this->reply('✅ Спасибо, ' . $name . '!\n\nЭтап 2/3 - Ваш email:');
+    }
+
+    private function formHandleEmail(string $email): void
+    {
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $this->reply('❌ Некорректный email. Попробуйте снова:');
+            return;
+        }
+
+        $this->chat->storeConversationData('form_email', $email);
+        $this->chat->storeConversationData('form_step', 'phone');
+        $this->reply('✅ Email принят!\n\nЭтап 3/3 - Ваш телефон (формат: +7XXXXXXXXXX):');
+    }
+
+    private function formHandlePhone(string $phone): void
+    {
+        if (!preg_match('/^\+?[0-9]{10,}$/', str_replace([' ', '-', '(', ')'], '', $phone))) {
+            $this->reply('❌ Некорректный номер. Попробуйте снова:');
+            return;
+        }
+
+        $formData = [
+            'name' => $this->chat->getConversationData('form_name'),
+            'email' => $this->chat->getConversationData('form_email'),
+            'phone' => $phone,
+        ];
+
+        \Log::info('Telegraph: Анкета заполнена', $formData);
+
+        $this->reply('✅ Анкета успешно заполнена!\n\n' .
+            "Ваши данные:\n" .
+            "Имя: " . $formData['name'] . "\n" .
+            "Email: " . $formData['email'] . "\n" .
+            "Телефон: " . $phone
+        );
+
+        $this->chat->deleteConversationData();
     }
 }
