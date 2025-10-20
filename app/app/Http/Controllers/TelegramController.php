@@ -10,48 +10,40 @@ class TelegramController extends Controller
 {
     public function webhook(Request $request)
     {
-        // Логируем факт вызова метода
         Log::info('=== TELEGRAM WEBHOOK CALLED ===');
+        Log::info('Raw request content:', ['content' => $request->getContent()]);
+        Log::info('Request headers:', $request->headers->all());
         
         try {
             $telegram = new Api(env('TELEGRAM_BOT_TOKEN'));
-            Log::info('Telegram API instance created');
             
-            $update = $telegram->getWebhookUpdate();
-            Log::info('Update received:', [$update]);
+            // Получаем сырые данные
+            $input = $request->getContent();
+            $data = json_decode($input, true);
+            Log::info('Decoded JSON data:', $data);
             
-            $message = $update->getMessage();
-            Log::info('Message extracted:', [$message]);
-            
-            if ($message && $message->has('text')) {
-                $chatId = $message->getChat()->getId();
-                $text = $message->getText();
+            if (isset($data['message']['text'])) {
+                $chatId = $data['message']['chat']['id'];
+                $text = $data['message']['text'];
                 
-                Log::info("Processing message: '{$text}' from chat: {$chatId}");
+                Log::info("Processing: '{$text}' from chat: {$chatId}");
                 
                 if ($text === '/start') {
-                    Log::info('Sending welcome message...');
-                    
-                    $response = $telegram->sendMessage([
+                    $telegram->sendMessage([
                         'chat_id' => $chatId,
                         'text' => 'Привет! Я бот на Laravel! Наконец-то работаю! 🎉'
                     ]);
-                    
-                    Log::info('Message sent successfully:', [$response]);
-                } else {
-                    Log::info("Unknown command: {$text}");
+                    Log::info('Welcome message sent');
                 }
             } else {
-                Log::info('No text message received');
+                Log::info('No text message in data');
             }
             
-            Log::info('=== WEBHOOK COMPLETED SUCCESSFULLY ===');
             return response()->json(['status' => 'success']);
             
         } catch (\Exception $e) {
-            Log::error('WEBHOOK ERROR: ' . $e->getMessage());
-            Log::error('Stack trace: ' . $e->getTraceAsString());
-            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
+            Log::error('ERROR: ' . $e->getMessage());
+            return response()->json(['status' => 'error'], 500);
         }
     }
 }
