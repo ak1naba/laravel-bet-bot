@@ -9,6 +9,11 @@ use App\Http\Controllers\TelegramController;
 use Illuminate\Support\Facades\Route;
 
 
+Route::prefix('/telegram')
+    ->group(function(){
+        Route::post('/webhook', [TelegramController::class, 'webhook']);
+});
+
 Route::post('/login', [AuthController::class, 'authenticate']);
 Route::post('/register', [AuthController::class, 'register']);
 
@@ -52,7 +57,3 @@ Route::group(['middleware'=>'auth:sanctum'], function (){
 
 });
 
-Route::prefix('/telegram')
-    ->group(function(){
-        Route::post('/webhook', [TelegramController::class, 'webhook']);
-});
