@@ -10,6 +10,8 @@ class StartModule extends WebhookHandler
 {
     public function handle(Request $request, TelegraphBot $bot): void
     {
+        \Log::info('Telegraph: StartModule::handle вызвана');
+        
         $this->reply('Добро пожаловать! 👋\n\n' .
             '/form - Заполнить анкету\n' .
             '/profile - Мой профиль\n' .
