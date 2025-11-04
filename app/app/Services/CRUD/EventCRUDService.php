@@ -3,6 +3,7 @@
 namespace App\Services\CRUD;
 
 use App\Helpers\DataTransformer;
+use App\Http\Resources\Event\EventResource;
 use App\Http\Resources\Team\TeamResource;
 use App\Models\Event;
 use App\Models\Sport;
@@ -19,6 +20,13 @@ class EventCRUDService extends BaseCRUDService
         private DataTransformer $dataTransformer,
     ){
         parent::__construct();
+    }
+
+    public function indexPaginate(array $params)
+    {
+        $pagination = parent::indexPaginate($params);
+
+        return $this->dataTransformer->paginatedResponse($pagination, EventResource::class);
     }
 
 }
