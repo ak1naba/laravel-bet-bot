@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\EventController;
 use App\Http\Controllers\NewItemController;
 use App\Http\Controllers\SportController;
 use App\Http\Controllers\TeamController;
@@ -52,6 +53,17 @@ Route::group(['middleware'=>'auth:sanctum'], function (){
                 Route::delete('/force/{team}', [TeamController::class, 'forceDelete'])->name('team.forceDelete');
                 Route::post('/restore/{team}', [TeamController::class, 'restore'])->name('team.restore');
             });
+
+            Route::prefix('/event')
+                ->group(function () {
+                    Route::get('/', [EventController::class, 'index'])->name('event.index');
+                    Route::get('/{event}', [EventController::class, 'show'])->name('event.show');
+                    Route::post('/', [EventController::class, 'store'])->name('event.store');
+                    Route::put('/{event}', [EventController::class, 'update'])->name('event.update');
+                    Route::delete('/{event}', [EventController::class, 'delete'])->name('event.delete');
+                    Route::delete('/force/{event}', [EventController::class, 'forceDelete'])->name('event.forceDelete');
+                    Route::post('/restore/{event}', [EventController::class, 'restore'])->name('event.restore');
+                });
 
     });
 

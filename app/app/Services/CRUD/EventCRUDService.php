@@ -4,14 +4,15 @@ namespace App\Services\CRUD;
 
 use App\Helpers\DataTransformer;
 use App\Http\Resources\Team\TeamResource;
+use App\Models\Event;
 use App\Models\Sport;
 use App\Models\Team;
 
-class TeamCRUDService extends BaseCRUDService
+class EventCRUDService extends BaseCRUDService
 {
     public function modelClass(): string
     {
-        return Team::class;
+        return Event::class;
     }
 
     public function __construct(
@@ -20,10 +21,4 @@ class TeamCRUDService extends BaseCRUDService
         parent::__construct();
     }
 
-    public function indexPaginate(array $params)
-    {
-        $pagination = parent::indexPaginate($params);
-
-        return $this->dataTransformer->paginatedResponse($pagination, TeamResource::class);
-    }
 }

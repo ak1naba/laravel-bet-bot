@@ -21,6 +21,13 @@ class Event extends Model
 
     protected $dates = ['deleted_at'];
 
+    protected $casts = [
+        'start_time' => 'datetime',
+        'end_time' => 'datetime',
+        'metadata' => 'array',
+    ];
+
+
     public function sport()
     {
         return $this->belongsTo(Sport::class);
