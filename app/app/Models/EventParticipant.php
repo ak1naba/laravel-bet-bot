@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\Event;
+use App\Models\Team;
 
 class EventParticipant extends Model
 {
@@ -20,6 +22,15 @@ class EventParticipant extends Model
         'deleted_at'
     ];
 
+    
+    protected static function booted(): void
+    {
+        static::creating(function (self $participant) {
+            $participant->duplicate_event = Event::find($participant->event_id)?->title;
+            $participant->duplicate_team = Team::find($participant->team_id)?->name;
+        });
+    }
+
     public function event()
     {
         return $this->belongsTo(Event::class);
@@ -29,4 +40,6 @@ class EventParticipant extends Model
     {
         return $this->belongsTo(Team::class);
     }
+
+
 }

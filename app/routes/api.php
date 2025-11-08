@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\EventParticipantController;
 use App\Http\Controllers\NewItemController;
 use App\Http\Controllers\SportController;
 use App\Http\Controllers\TeamController;
@@ -65,6 +66,17 @@ Route::group(['middleware'=>'auth:sanctum'], function (){
                     Route::delete('/{event}', [EventController::class, 'delete'])->name('event.delete');
                     Route::delete('/force/{event}', [EventController::class, 'forceDelete'])->name('event.forceDelete');
                     Route::post('/restore/{event}', [EventController::class, 'restore'])->name('event.restore');
+
+                    Route::prefix('{event}/participant')
+                        ->group(function () {
+                                Route::get('/', [EventParticipantController::class, 'index'])->name('participant.index');
+                                Route::get('/{participant}', [EventParticipantController::class, 'show'])->name('participant.show');
+                                Route::post('/', [EventParticipantController::class, 'store'])->name('participant.store');
+                                Route::put('/{participant}', [EventParticipantController::class, 'update'])->name('participant.update');
+                                Route::delete('/{participant}', [EventParticipantController::class, 'delete'])->name('participant.delete');
+                                Route::delete('/force/{participant}', [EventParticipantController::class, 'forceDelete'])->name('participant.forceDelete');
+                                Route::post('/restore/{participant}', [EventParticipantController::class, 'restore'])->name('participant.restore');
+                        });
                 });
 
     });
