@@ -10,6 +10,7 @@ use App\Telegram\StartCommand;
 use App\Telegram\HelpCommand;
 use App\Telegram\ProfileCommnad;
 use App\Telegram\FormWizard;
+use App\Telegram\EventsCommand;
 
 
 class TelegramController extends Controller
@@ -17,11 +18,13 @@ class TelegramController extends Controller
     private $commandMap = [
         '/start' => StartCommand::class,
         '/help' => HelpCommand::class,
+        '/events' => EventsCommand::class,
         '/profile' => ProfileCommand::class,
         '/form' => FormWizard::class,
         '👤 мой профиль' => ProfileCommand::class,
         'ℹ️ помощь' => HelpCommand::class,
         '📝 заполнить форму' => FormWizard::class,
+        '🏟 события' => EventsCommand::class,
     ];
 
     public function webhook(Request $request)
@@ -48,12 +51,19 @@ class TelegramController extends Controller
 
     private function handleCommand($telegram, $chatId, $text, $userData)
     {
-        $commandClass = $this->commandMap[$text] ?? null;
+    $normalized = is_string($text) ? mb_strtolower(trim($text)) : $text;
+    $commandClass = $this->commandMap[$text] ?? $this->commandMap[$normalized] ?? null;
 
         if ($commandClass) {
             $handler = new $commandClass($telegram, $chatId, $userData);
             $handler->handle($text);
         } else {
+            // pattern based commands: sport:{id}
+            if (is_string($text) && str_starts_with($text, 'sport:')) {
+                $handler = new EventsCommand($telegram, $chatId, $userData);
+                $handler->handle($text);
+                return;
+            }
             // Проверяем, не находится ли пользователь в процессе заполнения формы
             if ($this->isInFormProcess($chatId)) {
                 $handler = new FormWizard($telegram, $chatId, $userData);

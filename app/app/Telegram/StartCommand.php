@@ -20,6 +20,10 @@ class StartCommand extends CommandHandler
                 Keyboard::button('📝 Заполнить форму'),
                 Keyboard::button('⚙️ Настройки')
             ]);
+            // add events button
+            $keyboard->row([
+                Keyboard::button('🏟 События')
+            ]);
             
         $message = "👋 Добро пожаловать, {$userInfo['first_name']}!\n\n";
         $message .= "Я ваш телеграм бот на Laravel.\n";
