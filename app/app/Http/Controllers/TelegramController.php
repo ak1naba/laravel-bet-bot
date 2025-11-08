@@ -33,12 +33,32 @@ class TelegramController extends Controller
             $telegram = new Api(env('TELEGRAM_BOT_TOKEN'));
             $input = $request->all();
 
+            // handle message text
             if (isset($input['message']['text'])) {
                 $chatId = $input['message']['chat']['id'];
                 $text = $input['message']['text'];
                 $userData = $input['message']['from'];
 
                 $this->handleCommand($telegram, $chatId, $text, $userData);
+            }
+
+            // handle inline button callbacks (callback_query)
+            if (isset($input['callback_query'])) {
+                $callback = $input['callback_query'];
+                $chatId = $callback['message']['chat']['id'];
+                $data = $callback['data'] ?? null;
+                $userData = $callback['from'] ?? null;
+
+                // answer callback to remove spinner in client
+                try {
+                    $telegram->answerCallbackQuery(['callback_query_id' => $callback['id']]);
+                } catch (\Throwable $e) {
+                    // ignore
+                }
+
+                if ($data) {
+                    $this->handleCommand($telegram, $chatId, $data, $userData);
+                }
             }
 
             return response()->json(['status' => 'success']);

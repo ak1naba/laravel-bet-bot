@@ -4,14 +4,15 @@ namespace App\Telegram;
 
 use App\Models\Sport;
 use App\Models\Event;
-use Telegram\Bot\Keyboard\Keyboard;
 
 class EventsCommand extends CommandHandler
 {
     public function handle($text = null)
     {
-        // If user requests events list, show sports with buttons
-        if ($text === '/events' || mb_strtolower($text) === '🏟 события' || mb_strtolower($text) === 'события') {
+        $normalized = is_string($text) ? mb_strtolower(trim($text)) : $text;
+
+        // show sports list with inline buttons
+        if ($text === '/events' || $normalized === '🏟 события' || $normalized === 'события') {
             $sports = Sport::all();
 
             if ($sports->isEmpty()) {
@@ -19,32 +20,38 @@ class EventsCommand extends CommandHandler
                 return;
             }
 
-            // Prepare a human-readable list and reply keyboard with sport buttons
             $list = "🏟 Доступные виды спорта:\n\n";
-            $keyboard = Keyboard::make();
+            $inlineKeyboard = [];
             $row = [];
+
             foreach ($sports as $sport) {
                 $list .= "{$sport->id} — {$sport->name}\n";
-                // button text will be parsed as command, use sport:{id}
-                $row[] = Keyboard::button("sport:{$sport->id}");
-                // push rows of 2 buttons
+                $row[] = ['text' => $sport->name, 'callback_data' => "sport:{$sport->id}"];
+                // 2 buttons per row
                 if (count($row) === 2) {
-                    $keyboard->row($row);
+                    $inlineKeyboard[] = $row;
                     $row = [];
                 }
             }
             if (!empty($row)) {
-                $keyboard->row($row);
+                $inlineKeyboard[] = $row;
             }
 
             $list .= "\nНажмите кнопку ниже, чтобы увидеть события выбранного вида спорта.";
 
-            $this->sendMessage($list, $keyboard);
+            // send using telegram API directly to include inline keyboard as JSON
+            $this->telegram->sendMessage([
+                'chat_id' => $this->chatId,
+                'text' => $list,
+                'parse_mode' => 'HTML',
+                'reply_markup' => json_encode(['inline_keyboard' => $inlineKeyboard])
+            ]);
+
             return;
         }
 
-        // If text starts with sport:, parse id and show events
-        if (str_starts_with($text, 'sport:')) {
+        // If text starts with sport:, parse id and show events (also used by callback_data)
+        if (is_string($text) && str_starts_with($text, 'sport:')) {
             $parts = explode(':', $text);
             $sportId = isset($parts[1]) ? intval($parts[1]) : null;
 
