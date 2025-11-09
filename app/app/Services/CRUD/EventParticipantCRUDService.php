@@ -2,8 +2,11 @@
 
 namespace App\Services\CRUD;
 
+use App\Helpers\DataTransformer;
+use App\Http\Resources\Participants\ParticipantResource;
 use App\Models\EventParticipant;
 use App\Models\Event;
+
 
 class EventParticipantCRUDService extends BaseCRUDService
 {
@@ -12,8 +15,9 @@ class EventParticipantCRUDService extends BaseCRUDService
         return EventParticipant::class;
     }
 
-    public function __construct()
-    {
+    public function __construct(
+        private DataTransformer $dataTransformer
+    ) {
         parent::__construct();
     }
 
@@ -22,9 +26,11 @@ class EventParticipantCRUDService extends BaseCRUDService
      */
     public function indexPaginateForEvent(Event $event, array $params)
     {
-        return $this->newQuery()
+        $participants = $this->newQuery()
             ->where('event_id', $event->id)
             ->paginate($params['count_on_page'] ?? -1);
+
+        return $this->dataTransformer->paginatedResponse($participants, ParticipantResource::class );
     }
 
     public function getInstanceForEvent(EventParticipant $participant)

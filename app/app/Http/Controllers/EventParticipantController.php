@@ -23,7 +23,8 @@ class EventParticipantController extends Controller
     {
         try {
             return new JsonResponse(
-                $this->service->indexPaginate(
+                $this->service->indexPaginateForEvent(
+                    $event,
                     $request->validated()
                 ),
                 Response::HTTP_OK
