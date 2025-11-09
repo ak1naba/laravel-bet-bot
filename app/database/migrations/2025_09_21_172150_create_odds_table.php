@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('duplicate_market')->nullable();
 
             $table->decimal('value', 6, 2);
+            $table->boolean('is_win')->default(false);
 
             $table->softDeletes();
             $table->timestamps();

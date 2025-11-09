@@ -14,6 +14,7 @@ class Odd extends Model
         'market_id',
         'duplicate_market',
         'value',
+        'is_win',
     ];
 
     protected $dates = ['deleted_at'];
@@ -26,6 +27,10 @@ class Odd extends Model
             }
         });
     }
+
+    protected $casts = [
+        'is_win' => 'boolean',
+    ];
 
     public function market()
     {

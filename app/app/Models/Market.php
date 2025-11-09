@@ -18,9 +18,14 @@ class Market extends Model
         'description',
         'participant_id',
         'duplicate_participant',
+        'is_win',
     ];
 
     protected $dates = ['deleted_at'];
+
+    protected $casts = [
+        'is_win' => 'boolean',
+    ];
 
     protected static function booted(): void
     {
