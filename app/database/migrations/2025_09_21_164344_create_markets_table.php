@@ -15,13 +15,13 @@ return new class extends Migration
             $table->id();
 
             $table->foreignId('event_id')->nullable()->constrained('events')->nullOnDelete();
-            $table->string('duplicate_event');
+            $table->string('duplicate_event')->nullable();
 
             $table->string('type');
             $table->string('description');
 
             $table->foreignId('participant_id')->nullable()->constrained('event_participants')->nullOnDelete();
-            $table->string('duplicate_participant');
+            $table->string('duplicate_participant')->nullable();
 
             $table->timestamps();
         });

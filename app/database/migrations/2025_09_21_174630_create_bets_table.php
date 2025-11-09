@@ -14,11 +14,11 @@ return new class extends Migration
         Schema::create('bets', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->string('duplicate_user');
+            $table->string('duplicate_user')->nullable();
             $table->foreignId('market_id')->constrained()->cascadeOnDelete();
-            $table->string('duplicate_market');
+            $table->string('duplicate_market')->nullable();
             $table->foreignId('odds_id')->constrained()->cascadeOnDelete();
-            $table->string('duplicate_odds');
+            $table->string('duplicate_odds')->nullable();
             $table->decimal('amount', 10, 2);
             $table->enum('status', ['pending', 'won', 'lost', 'canceled'])->default('pending');
             $table->decimal('payout', 10, 2)->nullable(); // сколько реально выиграл

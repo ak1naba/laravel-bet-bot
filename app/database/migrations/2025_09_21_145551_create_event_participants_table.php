@@ -15,10 +15,10 @@ return new class extends Migration
             $table->id();
 
             $table->foreignId('event_id')->nullable()->constrained('events')->nullOnDelete();
-            $table->string('duplicate_event');
+            $table->string('duplicate_event')->nullable();
 
             $table->foreignId('team_id')->nullable()->constrained('teams')->nullOnDelete();
-            $table->string('duplicate_team');
+            $table->string('duplicate_team')->nullable();
 
             $table->softDeletes();
             $table->timestamps();

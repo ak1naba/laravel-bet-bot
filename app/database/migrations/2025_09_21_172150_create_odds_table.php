@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
 
             $table->foreignId('market_id')->nullable()->constrained()->nullOnDelete();
-            $table->string('duplicate_market');
+            $table->string('duplicate_market')->nullable();
 
             $table->decimal('value', 6, 2);
 

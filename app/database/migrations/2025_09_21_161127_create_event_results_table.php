@@ -15,10 +15,10 @@ return new class extends Migration
             $table->id();
 
             $table->foreignId('event_id')->nullable()->constrained('events')->nullOnDelete();
-            $table->string('duplicate_event');
+            $table->string('duplicate_event')->nullable();
 
             $table->foreignId('winner_id')->nullable()->constrained('users')->nullOnDelete();
-            $table->string('duplicate_winner');
+            $table->string('duplicate_winner')->nullable();
 
             $table->jsonb('metadata');
 
