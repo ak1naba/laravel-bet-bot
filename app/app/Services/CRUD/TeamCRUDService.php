@@ -26,4 +26,12 @@ class TeamCRUDService extends BaseCRUDService
 
         return $this->dataTransformer->paginatedResponse($pagination, TeamResource::class);
     }
+
+    public function filter(Sport $sport, array $params){
+        $pagination =  $this->newQuery()
+            ->where('sport_id', $sport->id)
+            ->paginate($params['count_on_page'] ?? -1);
+
+        return $this->dataTransformer->paginatedResponse($pagination, TeamResource::class);
+    }
 }

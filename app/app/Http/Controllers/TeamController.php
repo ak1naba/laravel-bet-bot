@@ -6,8 +6,10 @@ use App\Http\Requests\BasePaginateRequest;
 use App\Http\Requests\Team\TeamStoreRequest;
 use App\Http\Requests\Team\TeamUpdateRequest;
 use App\Models\Team;
+use App\Models\Sport;
 use App\Services\CRUD\TeamCRUDService;
 use Exception;
+use Faker\Provider\Base;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -118,4 +120,19 @@ class TeamController extends Controller
         }
     }
 
+    public function filter(Sport $sport, BasePaginateRequest $request)
+    
+    {
+        try {
+            return new JsonResponse(
+                $this->teamCRUDService->filter(
+                    $sport,
+                    $request->all()
+                ),
+                Response::HTTP_OK
+            );
+        } catch (Exception $e) {
+            return new JsonResponse('Что-то пошло не так', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
 }

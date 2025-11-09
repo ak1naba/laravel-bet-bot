@@ -66,6 +66,8 @@ Route::group(['middleware'=>'auth:sanctum'], function (){
                 Route::delete('/{team}', [TeamController::class, 'delete'])->name('team.delete');
                 Route::delete('/force/{team}', [TeamController::class, 'forceDelete'])->name('team.forceDelete');
                 Route::post('/restore/{team}', [TeamController::class, 'restore'])->name('team.restore');
+                
+                Route::get('/filter/{sport}', [TeamController::class, 'filter'])->name('team.filter');
             });
 
             Route::prefix('/event')
