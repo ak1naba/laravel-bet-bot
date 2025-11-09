@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\BasePaginateRequest;
+use App\Http\Requests\EventParticipant\EventParticipantStoreRequest;
+use App\Http\Requests\EventParticipant\EventParticipantUpdateRequest;
 use App\Models\EventParticipant;
+use App\Models\Event;
 use App\Services\CRUD\EventParticipantCRUDService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -16,7 +19,7 @@ class EventParticipantController extends Controller
     ){
     }
 
-    public function index(BasePaginateRequest $request)
+    public function index(Event $event, BasePaginateRequest $request)
     {
         try {
             return new JsonResponse(
@@ -30,8 +33,11 @@ class EventParticipantController extends Controller
         }
     }
 
-    public function show(EventParticipant $participant)
+    public function show(Event $event, EventParticipant $participant)
     {
+        if ($participant->event_id !== $event->id) {
+            abort(404, 'Участник не принадлежит событию');
+        }
         try {
             return new JsonResponse(
                 $this->service->getInstance(
@@ -44,11 +50,12 @@ class EventParticipantController extends Controller
         }
     }
 
-    public function store(Request $request)
+    public function store(Event $event, EventParticipantStoreRequest $request)
     {
         try {
             return new JsonResponse(
-                $this->service->create(
+                $this->service->createForEvent(
+                    $event,
                     $request->all()
                 ),
                 Response::HTTP_OK
@@ -58,8 +65,12 @@ class EventParticipantController extends Controller
         }
     }
 
-    public function update(Request $request, EventParticipant $participant)
+    public function update(Event $event, EventParticipant $participant, EventParticipantUpdateRequest $request)
     {
+
+        if ($participant->event_id !== $event->id) {
+            abort(404, 'Участник не принадлежит событию');
+        }
         try {
             return new JsonResponse(
                 $this->service->update(
@@ -73,8 +84,11 @@ class EventParticipantController extends Controller
         }
     }
 
-    public function delete(EventParticipant $participant)
+    public function delete(Event $event, EventParticipant $participant)
     {
+        if ($participant->event_id !== $event->id) {
+            abort(404, 'Участник не принадлежит событию');
+        }
         try {
             return new JsonResponse(
                 $this->service->delete(
@@ -87,8 +101,11 @@ class EventParticipantController extends Controller
         }
     }
 
-    public function forceDelete(EventParticipant $participant)
+    public function forceDelete(Event $event, EventParticipant $participant)
     {
+        if ($participant->event_id !== $event->id) {
+            abort(404, 'Участник не принадлежит событию');
+        }
         try {
             return new JsonResponse(
                 $this->service->forceDelete(
@@ -101,8 +118,11 @@ class EventParticipantController extends Controller
         }
     }
 
-    public function restore(EventParticipant $participant)
+    public function restore(Event $event, EventParticipant $participant)
     {
+        if ($participant->event_id !== $event->id) {
+            abort(404, 'Участник не принадлежит событию');
+        }
         try {
             return new JsonResponse(
                 $this->service->restore(
