@@ -31,6 +31,9 @@ Route::group(['middleware'=>'auth:sanctum'], function (){
     Route::prefix('/user')
         ->group(function () {
             Route::get('/me', [UserController::class, 'getAuthenticatedUser']);
+            Route::get('/wallet', [\App\Http\Controllers\WalletController::class, 'show'])->name('user.wallet.show');
+            Route::post('/wallet/deposit', [\App\Http\Controllers\WalletController::class, 'deposit'])->name('user.wallet.deposit');
+            Route::post('/wallet/withdraw', [\App\Http\Controllers\WalletController::class, 'withdraw'])->name('user.wallet.withdraw');
     });
 
     // User-facing bets

@@ -30,7 +30,7 @@ class EventParticipantCRUDService extends BaseCRUDService
             ->where('event_id', $event->id)
             ->paginate($params['count_on_page'] ?? -1);
 
-        return $this->dataTransformer->paginatedResponse($participants, ParticipantResource::class );
+        return $this->dataTransformer->paginatedResponse($participants, ParticipantResource::class);
     }
 
     public function getInstanceForEvent(EventParticipant $participant)

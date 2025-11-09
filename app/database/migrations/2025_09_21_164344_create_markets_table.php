@@ -23,6 +23,7 @@ return new class extends Migration
             $table->foreignId('participant_id')->nullable()->constrained('event_participants')->nullOnDelete();
             $table->string('duplicate_participant')->nullable();
 
+            $table->softDeletes();
             $table->timestamps();
         });
     }

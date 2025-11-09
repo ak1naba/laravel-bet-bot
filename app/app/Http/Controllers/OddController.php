@@ -3,71 +3,28 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\BasePaginateRequest;
-use App\Http\Requests\Market\MarketStoreRequest;
-use App\Http\Requests\Market\MarketUpdateRequest;
+use App\Http\Requests\Odd\OddStoreRequest;
+use App\Http\Requests\Odd\OddUpdateRequest;
 use App\Models\Market;
-use App\Models\Event;
-use App\Services\CRUD\MarketCRUDService;
+use App\Models\Odd;
+use App\Services\CRUD\OddCRUDService;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
-class MarketController extends Controller
+class OddController extends Controller
 {
     public function __construct(
-        private MarketCRUDService $marketCRUDService
+        private OddCRUDService $oddCRUDService
     ){
     }
 
-    public function index(Event $event, BasePaginateRequest $request)
-    {
-        // try {
-            return new JsonResponse(
-                $this->marketCRUDService->indexPaginateForEvent(
-                    $event,
-                    $request->validated()
-                ),
-                Response::HTTP_OK
-            );
-        // } catch (Exception $e) {
-        //     return new JsonResponse('Что-то пошло не так', Response::HTTP_INTERNAL_SERVER_ERROR);
-        // }
-    }
-
-    public function show(Event $event, Market $market)
+    public function index(Market $market, BasePaginateRequest $request)
     {
         try {
             return new JsonResponse(
-                $this->marketCRUDService->getInstance(
-                    $market
-                ),
-                Response::HTTP_OK
-            );
-        } catch (Exception $e) {
-            return new JsonResponse('Что-то пошло не так', Response::HTTP_INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    public function store(MarketStoreRequest $request, Event $event)
-    {
-        try {
-            return new JsonResponse(
-                $this->marketCRUDService->create(
-                    array_merge($request->validated(), ['event_id' => $event->id])
-                ),
-                Response::HTTP_OK
-            );
-        } catch (Exception $e) {
-            return new JsonResponse('Что-то пошло не так', Response::HTTP_INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    public function update(MarketUpdateRequest $request, Event $event, Market $market)
-    {
-        try {
-            return new JsonResponse(
-                $this->marketCRUDService->update(
+                $this->oddCRUDService->indexPaginateForMarket(
                     $market,
                     $request->validated()
                 ),
@@ -78,12 +35,12 @@ class MarketController extends Controller
         }
     }
 
-    public function delete(Event $event, Market $market)
+    public function show(Market $market, Odd $odd)
     {
         try {
             return new JsonResponse(
-                $this->marketCRUDService->delete(
-                    $market
+                $this->oddCRUDService->getInstance(
+                    $odd
                 ),
                 Response::HTTP_OK
             );
@@ -92,12 +49,12 @@ class MarketController extends Controller
         }
     }
 
-    public function forceDelete(Event $event, Market $market)
+    public function store(OddStoreRequest $request, Market $market)
     {
         try {
             return new JsonResponse(
-                $this->marketCRUDService->forceDelete(
-                    $market
+                $this->oddCRUDService->create(
+                    array_merge($request->validated(), ['market_id' => $market->id])
                 ),
                 Response::HTTP_OK
             );
@@ -106,12 +63,55 @@ class MarketController extends Controller
         }
     }
 
-    public function restore(Event $event, Market $market)
+    public function update(OddUpdateRequest $request, Market $market, Odd $odd)
     {
         try {
             return new JsonResponse(
-                $this->marketCRUDService->restore(
-                    $market
+                $this->oddCRUDService->update(
+                    $odd,
+                    $request->validated()
+                ),
+                Response::HTTP_OK
+            );
+        } catch (Exception $e) {
+            return new JsonResponse('Что-то пошло не так', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public function delete(Market $market, Odd $odd)
+    {
+        try {
+            return new JsonResponse(
+                $this->oddCRUDService->delete(
+                    $odd
+                ),
+                Response::HTTP_OK
+            );
+        } catch (Exception $e) {
+            return new JsonResponse('Что-то пошло не так', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public function forceDelete(Market $market, Odd $odd)
+    {
+        try {
+            return new JsonResponse(
+                $this->oddCRUDService->forceDelete(
+                    $odd
+                ),
+                Response::HTTP_OK
+            );
+        } catch (Exception $e) {
+            return new JsonResponse('Что-то пошло не так', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public function restore(Market $market, Odd $odd)
+    {
+        try {
+            return new JsonResponse(
+                $this->oddCRUDService->restore(
+                    $odd
                 ),
                 Response::HTTP_OK
             );

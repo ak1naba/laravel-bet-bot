@@ -3,72 +3,28 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\BasePaginateRequest;
-use App\Http\Requests\Market\MarketStoreRequest;
-use App\Http\Requests\Market\MarketUpdateRequest;
-use App\Models\Market;
-use App\Models\Event;
-use App\Services\CRUD\MarketCRUDService;
+use App\Http\Requests\Bet\BetStoreRequest;
+use App\Http\Requests\Bet\BetUpdateRequest;
+use App\Models\Bet;
+use App\Services\CRUD\BetCRUDService;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
 
-class MarketController extends Controller
+class BetController extends Controller
 {
     public function __construct(
-        private MarketCRUDService $marketCRUDService
+        private BetCRUDService $betCRUDService
     ){
     }
 
-    public function index(Event $event, BasePaginateRequest $request)
-    {
-        // try {
-            return new JsonResponse(
-                $this->marketCRUDService->indexPaginateForEvent(
-                    $event,
-                    $request->validated()
-                ),
-                Response::HTTP_OK
-            );
-        // } catch (Exception $e) {
-        //     return new JsonResponse('Что-то пошло не так', Response::HTTP_INTERNAL_SERVER_ERROR);
-        // }
-    }
-
-    public function show(Event $event, Market $market)
+    public function index(BasePaginateRequest $request)
     {
         try {
             return new JsonResponse(
-                $this->marketCRUDService->getInstance(
-                    $market
-                ),
-                Response::HTTP_OK
-            );
-        } catch (Exception $e) {
-            return new JsonResponse('Что-то пошло не так', Response::HTTP_INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    public function store(MarketStoreRequest $request, Event $event)
-    {
-        try {
-            return new JsonResponse(
-                $this->marketCRUDService->create(
-                    array_merge($request->validated(), ['event_id' => $event->id])
-                ),
-                Response::HTTP_OK
-            );
-        } catch (Exception $e) {
-            return new JsonResponse('Что-то пошло не так', Response::HTTP_INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    public function update(MarketUpdateRequest $request, Event $event, Market $market)
-    {
-        try {
-            return new JsonResponse(
-                $this->marketCRUDService->update(
-                    $market,
+                $this->betCRUDService->indexPaginate(
                     $request->validated()
                 ),
                 Response::HTTP_OK
@@ -78,12 +34,12 @@ class MarketController extends Controller
         }
     }
 
-    public function delete(Event $event, Market $market)
+    public function show(Bet $bet)
     {
         try {
             return new JsonResponse(
-                $this->marketCRUDService->delete(
-                    $market
+                $this->betCRUDService->getInstance(
+                    $bet
                 ),
                 Response::HTTP_OK
             );
@@ -92,12 +48,18 @@ class MarketController extends Controller
         }
     }
 
-    public function forceDelete(Event $event, Market $market)
+    public function store(BetStoreRequest $request)
     {
         try {
+            $data = $request->validated();
+
+            if (!isset($data['user_id']) && Auth::check()) {
+                $data['user_id'] = Auth::id();
+            }
+
             return new JsonResponse(
-                $this->marketCRUDService->forceDelete(
-                    $market
+                $this->betCRUDService->create(
+                    $data
                 ),
                 Response::HTTP_OK
             );
@@ -106,12 +68,55 @@ class MarketController extends Controller
         }
     }
 
-    public function restore(Event $event, Market $market)
+    public function update(BetUpdateRequest $request, Bet $bet)
     {
         try {
             return new JsonResponse(
-                $this->marketCRUDService->restore(
-                    $market
+                $this->betCRUDService->update(
+                    $bet,
+                    $request->validated()
+                ),
+                Response::HTTP_OK
+            );
+        } catch (Exception $e) {
+            return new JsonResponse('Что-то пошло не так', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public function delete(Bet $bet)
+    {
+        try {
+            return new JsonResponse(
+                $this->betCRUDService->delete(
+                    $bet
+                ),
+                Response::HTTP_OK
+            );
+        } catch (Exception $e) {
+            return new JsonResponse('Что-то пошло не так', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public function forceDelete(Bet $bet)
+    {
+        try {
+            return new JsonResponse(
+                $this->betCRUDService->forceDelete(
+                    $bet
+                ),
+                Response::HTTP_OK
+            );
+        } catch (Exception $e) {
+            return new JsonResponse('Что-то пошло не так', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public function restore(Bet $bet)
+    {
+        try {
+            return new JsonResponse(
+                $this->betCRUDService->restore(
+                    $bet
                 ),
                 Response::HTTP_OK
             );
