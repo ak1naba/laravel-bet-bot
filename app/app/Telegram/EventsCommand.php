@@ -1,3 +1,5 @@
+    // Логируем входящий текст для отладки
+    \Log::info('EventsCommand incoming text', ['text' => $text]);
 <?php
 
 namespace App\Telegram;
@@ -95,10 +97,9 @@ class EventsCommand extends CommandHandler
             return;
         }
 
-        // Если text начинается с event:DETAILS:, показать детали события, участников и кнопки маркетов
-        if (is_string($text) && str_starts_with($text, 'event:DETAILS:')) {
-            $parts = explode(':', $text);
-            $eventId = isset($parts[2]) ? intval($parts[2]) : null;
+        // Универсальная обработка подробностей события: event:{id} или event:DETAILS:{id}
+        if (is_string($text) && (preg_match('/^event:(DETAILS:)?(\d+)$/', $text, $matches))) {
+            $eventId = isset($matches[2]) ? intval($matches[2]) : null;
             if (!$eventId) {
                 $this->sendMessage('Неверный идентификатор события.');
                 return;

@@ -11,6 +11,7 @@ use App\Telegram\HelpCommand;
 use App\Telegram\ProfileCommnad;
 use App\Telegram\FormWizard;
 use App\Telegram\EventsCommand;
+use App\Telegram\WalletCommand;
 
 
 class TelegramController extends Controller
@@ -25,6 +26,9 @@ class TelegramController extends Controller
         'ℹ️ помощь' => HelpCommand::class,
         '📝 заполнить форму' => FormWizard::class,
         '🏟 события' => EventsCommand::class,
+        '/wallet' => WalletCommand::class,
+        '💰 мой кошелек' => WalletCommand::class,
+        'кошелек' => WalletCommand::class,
     ];
 
     public function webhook(Request $request)
@@ -78,6 +82,12 @@ class TelegramController extends Controller
             $handler = new $commandClass($telegram, $chatId, $userData);
             $handler->handle($text);
         } else {
+            // wallet:... pattern
+            if (is_string($text) && str_starts_with($text, 'wallet:')) {
+                $handler = new WalletCommand($telegram, $chatId, $userData);
+                $handler->handle($text);
+                return;
+            }
             // pattern based commands: sport:{id}
             if (is_string($text) && str_starts_with($text, 'sport:')) {
                 $handler = new EventsCommand($telegram, $chatId, $userData);
