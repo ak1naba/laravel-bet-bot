@@ -4,6 +4,7 @@ namespace App\Services\CRUD;
 
 use App\Models\Market;
 use App\Models\Event;
+use App\Services\WalletService;
 
 class MarketCRUDService extends BaseCRUDService
 {
@@ -37,13 +38,20 @@ class MarketCRUDService extends BaseCRUDService
         $market->save();
 
         // Find all bets for this market
-        $bets = $market->bets()->where('status', 'pending')->get();
+        $bets = $market->bets()->where('status', 'pending')->with('user')->get();
+
+        $walletService = app(WalletService::class);
 
         foreach ($bets as $bet) {
             if ($isWin) {
                 // Market won: calculate payout (amount * odd value)
                 $bet->status = 'won';
                 $bet->payout = $bet->amount * $bet->duplicate_odds;
+                
+                // Зачисляем выигрыш на кошелёк пользователя
+                if ($bet->user) {
+                    $walletService->deposit($bet->user, $bet->payout);
+                }
             } else {
                 // Market lost: no payout
                 $bet->status = 'lost';
