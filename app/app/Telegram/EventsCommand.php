@@ -67,21 +67,97 @@ class EventsCommand extends CommandHandler
             }
 
             $events = Event::where('sport_id', $sport->id)
+                ->whereIn('status', ['scheduled', 'live'])
                 ->orderBy('start_time')
                 ->get();
 
             if ($events->isEmpty()) {
-                $this->sendMessage("По виду спорта '{$sport->name}' событий не найдено.");
+                $this->sendMessage("По виду спорта '{$sport->name}' нет событий в статусе scheduled/live.");
                 return;
             }
 
             $message = "🏅 События для вида спорта: <b>{$sport->name}</b>\n\n";
+            $inlineKeyboard = [];
+            $row = [];
             foreach ($events as $ev) {
                 $start = $ev->start_time ? $ev->start_time : '—';
                 $message .= "• <b>{$ev->title}</b> — {$start}\n";
+                $row[] = ['text' => $ev->title, 'callback_data' => "event:{$ev->id}"];
+                if (count($row) === 2) {
+                    $inlineKeyboard[] = $row;
+                    $row = [];
+                }
             }
+            if (!empty($row)) {
+                $inlineKeyboard[] = $row;
+            }
+            $message .= "\nВыберите событие для подробностей.";
+            $this->telegram->sendMessage([
+                'chat_id' => $this->chatId,
+                'text' => $message,
+                'parse_mode' => 'HTML',
+                'reply_markup' => json_encode(['inline_keyboard' => $inlineKeyboard])
+            ]);
+            return;
+        }
 
-            $this->sendMessage($message);
+        // Если text начинается с event:, показать детали события, участников и кнопки маркетов
+        if (is_string($text) && str_starts_with($text, 'event:')) {
+            $parts = explode(':', $text);
+            $eventId = isset($parts[1]) ? intval($parts[1]) : null;
+            if (!$eventId) {
+                $this->sendMessage('Неверный идентификатор события.');
+                return;
+            }
+            $event = \App\Models\Event::find($eventId);
+            if (!$event) {
+                $this->sendMessage('Событие не найдено.');
+                return;
+            }
+            $participants = $event->participants;
+            $markets = $event->markets;
+
+            // Получаем TelegramUser и определяем таймзону
+            $telegramUser = null;
+            if ($this->userData && isset($this->userData['id'])) {
+                $telegramUser = \App\Models\TelegramUser::find($this->userData['id']);
+            }
+            $timezone = 'Europe/Moscow'; // default
+            // Можно добавить определение таймзоны по languagecode или хранить поле timezone
+            if ($telegramUser && !empty($telegramUser->languagecode)) {
+                if ($telegramUser->languagecode === 'en') $timezone = 'Europe/London';
+                if ($telegramUser->languagecode === 'ru') $timezone = 'Europe/Moscow';
+                // ... другие варианты
+            }
+            $start = $event->start_time ? $event->start_time->setTimezone($timezone)->format('d.m.Y H:i') : '—';
+            $end = $event->end_time ? $event->end_time->setTimezone($timezone)->format('d.m.Y H:i') : '—';
+
+            $msg = "🏟 <b>{$event->title}</b>\n";
+            $msg .= "🕒 <b>Время:</b> {$start} - {$end} ({$timezone})\n";
+            $msg .= "📄 <b>Описание:</b> {$event->description}\n";
+            $msg .= "\n👥 <b>Участники:</b>\n";
+            foreach ($participants as $p) {
+                $msg .= "• {$p->duplicate_team}\n";
+            }
+            $msg .= "\n💼 <b>Маркет:</b>\n";
+            $inlineKeyboard = [];
+            $row = [];
+            foreach ($markets as $market) {
+                $row[] = ['text' => $market->description, 'callback_data' => "market:{$market->id}"];
+                if (count($row) === 2) {
+                    $inlineKeyboard[] = $row;
+                    $row = [];
+                }
+            }
+            if (!empty($row)) {
+                $inlineKeyboard[] = $row;
+            }
+            $this->telegram->sendMessage([
+                'chat_id' => $this->chatId,
+                'text' => $msg,
+                'parse_mode' => 'HTML',
+                'reply_markup' => json_encode(['inline_keyboard' => $inlineKeyboard])
+            ]);
             return;
         }
 
