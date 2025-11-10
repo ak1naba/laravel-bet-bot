@@ -13,6 +13,7 @@ use App\Telegram\FormWizard;
 use App\Telegram\EventsCommand;
 use App\Telegram\WalletCommand;
 use App\Telegram\BetCommand;
+use App\Telegram\BetHistoryCommand;
 
 
 class TelegramController extends Controller
@@ -30,6 +31,10 @@ class TelegramController extends Controller
         '/wallet' => WalletCommand::class,
         '💰 мой кошелек' => WalletCommand::class,
         'кошелек' => WalletCommand::class,
+        '/history' => BetHistoryCommand::class,
+        '📊 история ставок' => BetHistoryCommand::class,
+        'история ставок' => BetHistoryCommand::class,
+        'история' => BetHistoryCommand::class,
     ];
 
     public function webhook(Request $request)
