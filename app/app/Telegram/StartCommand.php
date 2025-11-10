@@ -42,20 +42,17 @@ class StartCommand extends CommandHandler
         
         $keyboard = Keyboard::make()
             ->row([
-                Keyboard::button('👤 Мой профиль'),
-                Keyboard::button('ℹ️ Помощь')
+                Keyboard::button('🏟 События'),
             ])
             ->row([
-                Keyboard::button('📝 Заполнить форму'),
-                Keyboard::button('⚙️ Настройки')
-            ]);
-            // add events button
-            $keyboard->row([
-                Keyboard::button('🏟 События')
+                Keyboard::button('� Мой кошелек'),
+            ])
+            ->row([
+                Keyboard::button('📊 История ставок'),
             ]);
             
         $message = "👋 Добро пожаловать, {$userInfo['first_name']}!\n\n";
-        $message .= "Я ваш телеграм бот на Laravel.\n";
+        $message .= "Я ваш телеграм бот для ставок.\n";
         $message .= "Выберите действие из меню ниже:";
         
         $this->sendMessage($message, $keyboard);
