@@ -12,6 +12,7 @@ use App\Telegram\HelpCommand;
 use App\Telegram\FormWizard;
 use App\Telegram\EventsCommand;
 use App\Telegram\WalletCommand;
+use App\Telegram\BetCommand;
 
 
 class TelegramController extends Controller
@@ -88,6 +89,12 @@ class TelegramController extends Controller
                 $handler->handle($text);
                 return;
             }
+            // bet:... pattern (создание ставки)
+            if (is_string($text) && str_starts_with($text, 'bet:')) {
+                $handler = new BetCommand($telegram, $chatId, $userData);
+                $handler->handle($text);
+                return;
+            }
             // event:... pattern (детали события)
             if (is_string($text) && str_starts_with($text, 'event:')) {
                 $handler = new EventsCommand($telegram, $chatId, $userData);
@@ -110,6 +117,12 @@ class TelegramController extends Controller
             $tgId = $userData['id'] ?? null;
             if ($tgId && \Illuminate\Support\Facades\Cache::has("telegram:pending:{$tgId}")) {
                 $handler = new WalletCommand($telegram, $chatId, $userData);
+                $handler->handle($text);
+                return;
+            }
+            // Проверяем, не ожидает ли пользователь ввода суммы ставки
+            if ($tgId && \Illuminate\Support\Facades\Cache::has("telegram:bet_pending:{$tgId}")) {
+                $handler = new BetCommand($telegram, $chatId, $userData);
                 $handler->handle($text);
                 return;
             }

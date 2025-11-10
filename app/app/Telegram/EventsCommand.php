@@ -112,7 +112,12 @@ class EventsCommand extends CommandHandler
                 return;
             }
             $participants = $event->participants;
-            $markets = $event->markets;
+            $markets = $event->markets()
+                ->whereHas('odds') // только маркеты с коэффициентами
+                ->with(['odds' => function($query) {
+                    $query->orderBy('created_at', 'desc'); // последний коэффициент
+                }])
+                ->get();
 
             // Получаем TelegramUser и определяем таймзону
             $telegramUser = null;
@@ -134,19 +139,68 @@ class EventsCommand extends CommandHandler
             foreach ($participants as $p) {
                 $msg .= "• {$p->duplicate_team}\n";
             }
-            $msg .= "\n💼 <b>Маркет:</b>\n";
+            
+            if ($markets->isEmpty()) {
+                $msg .= "\n⚠️ Нет доступных маркетов для ставок.";
+                $this->sendMessage($msg);
+                return;
+            }
+            
+            $msg .= "\n💼 <b>Доступные ставки:</b>\n";
             $inlineKeyboard = [];
-            $row = [];
             foreach ($markets as $market) {
-                $row[] = ['text' => $market->description, 'callback_data' => "market:{$market->id}"];
-                if (count($row) === 2) {
-                    $inlineKeyboard[] = $row;
-                    $row = [];
+                $latestOdd = $market->odds->first(); // первый = последний (из-за orderBy desc)
+                if ($latestOdd) {
+                    $oddValue = $latestOdd->value;
+                    $inlineKeyboard[] = [
+                        ['text' => "{$market->description} (коэф. {$oddValue})", 'callback_data' => "market:{$market->id}"]
+                    ];
                 }
             }
-            if (!empty($row)) {
-                $inlineKeyboard[] = $row;
+            $this->telegram->sendMessage([
+                'chat_id' => $this->chatId,
+                'text' => $msg,
+                'parse_mode' => 'HTML',
+                'reply_markup' => json_encode(['inline_keyboard' => $inlineKeyboard])
+            ]);
+            return;
+        }
+
+        // Обработка клика по маркету: показать детали и кнопку для ставки
+        if (is_string($text) && str_starts_with($text, 'market:')) {
+            $parts = explode(':', $text);
+            $marketId = isset($parts[1]) ? intval($parts[1]) : null;
+            if (!$marketId) {
+                $this->sendMessage('Неверный идентификатор маркета.');
+                return;
             }
+            
+            $market = \App\Models\Market::with(['odds' => function($query) {
+                $query->orderBy('created_at', 'desc')->limit(1);
+            }, 'event'])->find($marketId);
+            
+            if (!$market) {
+                $this->sendMessage('Маркет не найден.');
+                return;
+            }
+            
+            $latestOdd = $market->odds->first();
+            if (!$latestOdd) {
+                $this->sendMessage('Нет доступных коэффициентов для этого маркета.');
+                return;
+            }
+            
+            $msg = "💼 <b>Маркет:</b> {$market->description}\n";
+            $msg .= "🏟 <b>Событие:</b> {$market->event->title}\n";
+            $msg .= "📊 <b>Текущий коэффициент:</b> {$latestOdd->value}\n";
+            $msg .= "\nНажмите 'Сделать ставку', чтобы продолжить.";
+            
+            $inlineKeyboard = [
+                [
+                    ['text' => 'Сделать ставку', 'callback_data' => "bet:create:{$market->id}:{$latestOdd->id}"]
+                ]
+            ];
+            
             $this->telegram->sendMessage([
                 'chat_id' => $this->chatId,
                 'text' => $msg,
