@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\BasePaginateRequest;
 use App\Http\Requests\Market\MarketStoreRequest;
 use App\Http\Requests\Market\MarketUpdateRequest;
+use App\Http\Requests\Market\MarketSettleRequest;
 use App\Models\Market;
 use App\Models\Event;
 use App\Services\CRUD\MarketCRUDService;
@@ -22,7 +23,7 @@ class MarketController extends Controller
 
     public function index(Event $event, BasePaginateRequest $request)
     {
-        // try {
+         try {
             return new JsonResponse(
                 $this->marketCRUDService->indexPaginateForEvent(
                     $event,
@@ -30,9 +31,9 @@ class MarketController extends Controller
                 ),
                 Response::HTTP_OK
             );
-        // } catch (Exception $e) {
-        //     return new JsonResponse('Что-то пошло не так', Response::HTTP_INTERNAL_SERVER_ERROR);
-        // }
+        } catch (Exception $e) {
+             return new JsonResponse('Что-то пошло не так', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
     public function show(Event $event, Market $market)
@@ -113,6 +114,18 @@ class MarketController extends Controller
                 $this->marketCRUDService->restore(
                     $market
                 ),
+                Response::HTTP_OK
+            );
+        } catch (Exception $e) {
+            return new JsonResponse('Что-то пошло не так', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public function settle(MarketSettleRequest $request, Event $event, Market $market)
+    {
+        try {
+            return new JsonResponse(
+                $this->marketCRUDService->settleMarket($market, $request->validated()['is_win']),
                 Response::HTTP_OK
             );
         } catch (Exception $e) {

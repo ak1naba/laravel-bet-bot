@@ -3,7 +3,6 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\EventParticipantController;
-use App\Http\Controllers\NewItemController;
 use App\Http\Controllers\SportController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\MarketController;
@@ -11,6 +10,7 @@ use App\Http\Controllers\OddController;
 use App\Http\Controllers\BetController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\TelegramController;
+use App\Http\Controllers\WalletController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -31,9 +31,9 @@ Route::group(['middleware'=>'auth:sanctum'], function (){
     Route::prefix('/user')
         ->group(function () {
             Route::get('/me', [UserController::class, 'getAuthenticatedUser']);
-            Route::get('/wallet', [\App\Http\Controllers\WalletController::class, 'show'])->name('user.wallet.show');
-            Route::post('/wallet/deposit', [\App\Http\Controllers\WalletController::class, 'deposit'])->name('user.wallet.deposit');
-            Route::post('/wallet/withdraw', [\App\Http\Controllers\WalletController::class, 'withdraw'])->name('user.wallet.withdraw');
+            Route::get('/wallet', [WalletController::class, 'show'])->name('user.wallet.show');
+            Route::post('/wallet/deposit', [WalletController::class, 'deposit'])->name('user.wallet.deposit');
+            Route::post('/wallet/withdraw', [WalletController::class, 'withdraw'])->name('user.wallet.withdraw');
     });
 
     // User-facing bets
@@ -69,7 +69,7 @@ Route::group(['middleware'=>'auth:sanctum'], function (){
                 Route::delete('/{team}', [TeamController::class, 'delete'])->name('team.delete');
                 Route::delete('/force/{team}', [TeamController::class, 'forceDelete'])->name('team.forceDelete');
                 Route::post('/restore/{team}', [TeamController::class, 'restore'])->name('team.restore');
-                
+
                 Route::get('/filter/{sport}', [TeamController::class, 'filter'])->name('team.filter');
             });
 
@@ -103,6 +103,7 @@ Route::group(['middleware'=>'auth:sanctum'], function (){
                             Route::delete('/{market}', [MarketController::class, 'delete'])->name('market.delete');
                             Route::delete('/force/{market}', [MarketController::class, 'forceDelete'])->name('market.forceDelete');
                             Route::post('/restore/{market}', [MarketController::class, 'restore'])->name('market.restore');
+                            Route::post('/{market}/settle', [MarketController::class, 'settle'])->name('market.settle');
                         });
 
                     Route::prefix('/market')
