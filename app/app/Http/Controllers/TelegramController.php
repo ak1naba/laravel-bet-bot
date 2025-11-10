@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Telegram\StartCommand;
 use App\Telegram\HelpCommand;
-use App\Telegram\ProfileCommnad;
+// use App\Telegram\ProfileCommnad;
 use App\Telegram\FormWizard;
 use App\Telegram\EventsCommand;
 use App\Telegram\WalletCommand;
@@ -88,9 +88,28 @@ class TelegramController extends Controller
                 $handler->handle($text);
                 return;
             }
+            // event:... pattern (детали события)
+            if (is_string($text) && str_starts_with($text, 'event:')) {
+                $handler = new EventsCommand($telegram, $chatId, $userData);
+                $handler->handle($text);
+                return;
+            }
             // pattern based commands: sport:{id}
             if (is_string($text) && str_starts_with($text, 'sport:')) {
                 $handler = new EventsCommand($telegram, $chatId, $userData);
+                $handler->handle($text);
+                return;
+            }
+            // market:... pattern
+            if (is_string($text) && str_starts_with($text, 'market:')) {
+                $handler = new EventsCommand($telegram, $chatId, $userData);
+                $handler->handle($text);
+                return;
+            }
+            // Проверяем, не ожидает ли пользователь ввода суммы для пополнения кошелька
+            $tgId = $userData['id'] ?? null;
+            if ($tgId && \Illuminate\Support\Facades\Cache::has("telegram:pending:{$tgId}")) {
+                $handler = new WalletCommand($telegram, $chatId, $userData);
                 $handler->handle($text);
                 return;
             }

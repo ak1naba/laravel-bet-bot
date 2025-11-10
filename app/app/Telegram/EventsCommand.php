@@ -1,16 +1,18 @@
-    // Логируем входящий текст для отладки
-    \Log::info('EventsCommand incoming text', ['text' => $text]);
 <?php
 
 namespace App\Telegram;
 
 use App\Models\Sport;
 use App\Models\Event;
+use Illuminate\Support\Facades\Log;
 
 class EventsCommand extends CommandHandler
 {
     public function handle($text = null)
     {
+        // Логируем входящий текст для отладки
+        Log::info('EventsCommand incoming text', ['text' => $text]);
+        
         $normalized = is_string($text) ? mb_strtolower(trim($text)) : $text;
 
         // show sports list with inline buttons
