@@ -78,20 +78,14 @@ class EventsCommand extends CommandHandler
 
             $message = "🏅 События для вида спорта: <b>{$sport->name}</b>\n\n";
             $inlineKeyboard = [];
-            $row = [];
             foreach ($events as $ev) {
                 $start = $ev->start_time ? $ev->start_time : '—';
                 $message .= "• <b>{$ev->title}</b> — {$start}\n";
-                $row[] = ['text' => $ev->title, 'callback_data' => "event:{$ev->id}"];
-                if (count($row) === 2) {
-                    $inlineKeyboard[] = $row;
-                    $row = [];
-                }
+                $inlineKeyboard[] = [
+                    ['text' => 'Подробнее', 'callback_data' => "event:DETAILS:{$ev->id}"]
+                ];
             }
-            if (!empty($row)) {
-                $inlineKeyboard[] = $row;
-            }
-            $message .= "\nВыберите событие для подробностей.";
+            $message .= "\nНажмите 'Подробнее' для информации о событии.";
             $this->telegram->sendMessage([
                 'chat_id' => $this->chatId,
                 'text' => $message,
@@ -101,10 +95,10 @@ class EventsCommand extends CommandHandler
             return;
         }
 
-        // Если text начинается с event:, показать детали события, участников и кнопки маркетов
-        if (is_string($text) && str_starts_with($text, 'event:')) {
+        // Если text начинается с event:DETAILS:, показать детали события, участников и кнопки маркетов
+        if (is_string($text) && str_starts_with($text, 'event:DETAILS:')) {
             $parts = explode(':', $text);
-            $eventId = isset($parts[1]) ? intval($parts[1]) : null;
+            $eventId = isset($parts[2]) ? intval($parts[2]) : null;
             if (!$eventId) {
                 $this->sendMessage('Неверный идентификатор события.');
                 return;
@@ -123,11 +117,9 @@ class EventsCommand extends CommandHandler
                 $telegramUser = \App\Models\TelegramUser::find($this->userData['id']);
             }
             $timezone = 'Europe/Moscow'; // default
-            // Можно добавить определение таймзоны по languagecode или хранить поле timezone
             if ($telegramUser && !empty($telegramUser->languagecode)) {
                 if ($telegramUser->languagecode === 'en') $timezone = 'Europe/London';
                 if ($telegramUser->languagecode === 'ru') $timezone = 'Europe/Moscow';
-                // ... другие варианты
             }
             $start = $event->start_time ? $event->start_time->setTimezone($timezone)->format('d.m.Y H:i') : '—';
             $end = $event->end_time ? $event->end_time->setTimezone($timezone)->format('d.m.Y H:i') : '—';

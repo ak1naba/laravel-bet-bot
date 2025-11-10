@@ -43,11 +43,7 @@ class StartCommand extends CommandHandler
         $keyboard = Keyboard::make()
             ->row([
                 Keyboard::button('🏟 События'),
-            ])
-            ->row([
-                Keyboard::button('� Мой кошелек'),
-            ])
-            ->row([
+                Keyboard::button('💰 Мой кошелек'),
                 Keyboard::button('📊 История ставок'),
             ]);
             
