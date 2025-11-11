@@ -12,7 +12,7 @@ class EventsCommand extends CommandHandler
     {
         // Логируем входящий текст для отладки
         Log::info('EventsCommand incoming text', ['text' => $text]);
-        
+
         $normalized = is_string($text) ? mb_strtolower(trim($text)) : $text;
 
         // show sports list with inline buttons
@@ -113,6 +113,7 @@ class EventsCommand extends CommandHandler
             }
             $participants = $event->participants;
             $markets = $event->markets()
+                ->where('is_win', null)
                 ->whereHas('odds') // только маркеты с коэффициентами
                 ->with(['odds' => function($query) {
                     $query->orderBy('created_at', 'desc'); // последний коэффициент
@@ -139,13 +140,13 @@ class EventsCommand extends CommandHandler
             foreach ($participants as $p) {
                 $msg .= "• {$p->duplicate_team}\n";
             }
-            
+
             if ($markets->isEmpty()) {
                 $msg .= "\n⚠️ Нет доступных маркетов для ставок.";
                 $this->sendMessage($msg);
                 return;
             }
-            
+
             $msg .= "\n💼 <b>Доступные ставки:</b>\n";
             $inlineKeyboard = [];
             foreach ($markets as $market) {
@@ -174,33 +175,33 @@ class EventsCommand extends CommandHandler
                 $this->sendMessage('Неверный идентификатор маркета.');
                 return;
             }
-            
+
             $market = \App\Models\Market::with(['odds' => function($query) {
                 $query->orderBy('created_at', 'desc')->limit(1);
             }, 'event'])->find($marketId);
-            
+
             if (!$market) {
                 $this->sendMessage('Маркет не найден.');
                 return;
             }
-            
+
             $latestOdd = $market->odds->first();
             if (!$latestOdd) {
                 $this->sendMessage('Нет доступных коэффициентов для этого маркета.');
                 return;
             }
-            
+
             $msg = "💼 <b>Маркет:</b> {$market->description}\n";
             $msg .= "🏟 <b>Событие:</b> {$market->event->title}\n";
             $msg .= "📊 <b>Текущий коэффициент:</b> {$latestOdd->value}\n";
             $msg .= "\nНажмите 'Сделать ставку', чтобы продолжить.";
-            
+
             $inlineKeyboard = [
                 [
                     ['text' => 'Сделать ставку', 'callback_data' => "bet:create:{$market->id}:{$latestOdd->id}"]
                 ]
             ];
-            
+
             $this->telegram->sendMessage([
                 'chat_id' => $this->chatId,
                 'text' => $msg,
